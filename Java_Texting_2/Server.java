@@ -10,24 +10,43 @@ public class Server{
     public Server(){
         try {
             this.serverSocket = new ServerSocket(5000);
-            Socket socket = this.serverSocket.accept();
-            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-            Message message = (Message) objectInputStream.readObject();
-            if(message != null){
-                System.out.println(message.getSender() + ": " +message.getMessageBody());
-            }
-
-            objectInputStream.close();
-            socket.close();
-            serverSocket.close();
 
         } catch (Exception e) {
             
         }
     }
 
+    public void startServer(){
+        while(!this.serverSocket.isClosed()){
+
+            try {
+                System.out.println("Waiting for new client");
+                Socket socket = this.serverSocket.accept();
+                System.out.println("New client connected");
+                Handler handler = new Handler(socket);
+
+                Thread thread = new Thread(handler);
+                thread.start();
+
+            } catch (Exception e) {
+                
+            }
+        }
+    }
+
+    public void closeServer(){
+        try {
+            if(this.serverSocket != null){
+                this.serverSocket.close();
+            }
+        } catch (Exception e) {
+            
+        }
+    }
+
     public static void main(String[] args) {
-        new Server();
+        Server server = new Server();
+        server.startServer();
     }
 
 }
