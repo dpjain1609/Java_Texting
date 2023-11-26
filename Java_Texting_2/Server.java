@@ -10,7 +10,6 @@ public class Server{
     public Server(){
         try {
             this.serverSocket = new ServerSocket(5000);
-
         } catch (Exception e) {
             
         }
@@ -29,7 +28,7 @@ public class Server{
                 thread.start();
 
             } catch (Exception e) {
-                
+                closeServer();
             }
         }
     }

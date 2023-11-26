@@ -17,6 +17,8 @@ public class Client {
             this.socket = new Socket("localhost", 5000);
             this.objectOutputStream = new ObjectOutputStream(this.socket.getOutputStream());
             this.objectInputStream = new ObjectInputStream(this.socket.getInputStream());
+            Message usernameObject = new Message(true, this.username, "username");
+            this.objectOutputStream.writeObject(usernameObject); 
 
         } catch (Exception e) {
             //removeClient();
@@ -44,11 +46,11 @@ public class Client {
                 Message messageToServer = new Message(true, this.username, messageToSend);
                 Message messageToClient = new Message(false, this.username, messageToSend);
                 objectOutputStream.writeObject(messageToClient);
-                objectOutputStream.writeObject(messageToServer);
+                //objectOutputStream.writeObject(messageToServer);
                 objectOutputStream.flush();
             }
         } catch (Exception e) {
-            //removeClient();
+            removeClient();
             System.out.println("Exception in sendMessage()");
         }
 
@@ -66,8 +68,9 @@ public class Client {
                         messageFromGroupChat = (Message)objectInputStream.readObject();
                         System.out.println(messageFromGroupChat.getSender() + ": " + messageFromGroupChat.getMessageBody());
                     } catch (Exception e) {
-                        //removeClient();
-                        System.out.println("Exception in listenForMessage()");
+                        removeClient();
+                        break;
+                        //System.out.println("Exception in listenForMessage()");
                    }
                 }
                 

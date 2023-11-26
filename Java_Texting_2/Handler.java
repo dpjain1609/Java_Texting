@@ -17,17 +17,18 @@ public class Handler implements Runnable{
             this.socket = socket;
             this.objectInputStream = new ObjectInputStream(this.socket.getInputStream());
             this.objectOutputStream = new ObjectOutputStream(this.socket.getOutputStream());
+            
+            Message usernameObject = (Message)this.objectInputStream.readObject();
+            this.clientUsername = usernameObject.getSender();
             clientHandlerList.add(this);
 
             String body = "SERVER: " + clientUsername + " has entered the chat";
-            Message messageToServer = new Message(true, clientUsername, body);
+            System.out.println(body);
             Message messageToClient = new Message(false, clientUsername, body);
 
             sendMessage(messageToClient);
-            sendMessage(messageToServer);
-
         } catch (Exception e) {
-            //removeHandler();
+            removeHandler();
             System.out.println("Exception in Handler()");
         }
     }
@@ -35,12 +36,12 @@ public class Handler implements Runnable{
     public void sendMessage(Message messageToSend){
         for(Handler handler : clientHandlerList){
             try {
-                // if(!handler.clientUsername.equals(this.clientUsername)){
+                // if(handler.clientUsername != null && !handler.clientUsername.equals(this.clientUsername)){
                     handler.objectOutputStream.writeObject(messageToSend);
                     handler.objectOutputStream.flush();
                 // }
             } catch (Exception e) {
-                // removeHandler();
+                removeHandler();
                 e.printStackTrace();
             }
         }
@@ -79,6 +80,11 @@ public class Handler implements Runnable{
         while(socket.isConnected()){
             try {
                 messageFromClient = (Message)objectInputStream.readObject();
+
+                if(messageFromClient.getMessageBody().equalsIgnoreCase("quit")){
+                    removeHandler();
+                }
+
                 sendMessage(messageFromClient);
             } catch (Exception e) {
                 removeHandler();
