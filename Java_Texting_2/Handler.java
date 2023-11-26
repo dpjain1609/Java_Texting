@@ -36,10 +36,8 @@ public class Handler implements Runnable{
     public void sendMessage(Message messageToSend){
         for(Handler handler : clientHandlerList){
             try {
-                // if(handler.clientUsername != null && !handler.clientUsername.equals(this.clientUsername)){
-                    handler.objectOutputStream.writeObject(messageToSend);
-                    handler.objectOutputStream.flush();
-                // }
+                handler.objectOutputStream.writeObject(messageToSend);
+                handler.objectOutputStream.flush();
             } catch (Exception e) {
                 removeHandler();
                 e.printStackTrace();
@@ -82,7 +80,11 @@ public class Handler implements Runnable{
                 messageFromClient = (Message)objectInputStream.readObject();
 
                 if(messageFromClient.getMessageBody().equalsIgnoreCase("quit")){
+                    String message = this.clientUsername + " has left the chat";
+                    sendMessage(new Message(true, "SERVER", message));
+                    System.out.println("SERVER: " + message);
                     removeHandler();
+                    break;
                 }
 
                 sendMessage(messageFromClient);

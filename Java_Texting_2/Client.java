@@ -46,7 +46,11 @@ public class Client {
                 Message messageToServer = new Message(true, this.username, messageToSend);
                 Message messageToClient = new Message(false, this.username, messageToSend);
                 objectOutputStream.writeObject(messageToClient);
-                //objectOutputStream.writeObject(messageToServer);
+                
+                if(messageToSend.equalsIgnoreCase("quit")){
+                    break;
+                }
+                
                 objectOutputStream.flush();
             }
         } catch (Exception e) {
@@ -70,7 +74,6 @@ public class Client {
                     } catch (Exception e) {
                         removeClient();
                         break;
-                        //System.out.println("Exception in listenForMessage()");
                    }
                 }
                 
