@@ -41,7 +41,7 @@ public class Client {
         
         try {
             while(socket.isConnected()){
-                //TODO: Parser
+
                 String messageToSend = scanner.nextLine();
                 Message messageToServer = new Message(true, this.username, messageToSend);
                 Message messageToClient = new Message(false, this.username, messageToSend);

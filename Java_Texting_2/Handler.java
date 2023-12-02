@@ -2,10 +2,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Handler implements Runnable{
     
-    public static ArrayList<Handler> clientHandlerList = new ArrayList<>();
+    public static Map<String, Handler> clientHandlerMap = new HashMap<>();
     private Socket socket;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
@@ -20,7 +22,7 @@ public class Handler implements Runnable{
             
             Message usernameObject = (Message)this.objectInputStream.readObject();
             this.clientUsername = usernameObject.getSender();
-            clientHandlerList.add(this);
+            clientHandlerMap.put(this.clientUsername, this);
 
             String body = "SERVER: " + clientUsername + " has entered the chat";
             System.out.println(body);
@@ -34,10 +36,13 @@ public class Handler implements Runnable{
     }
 
     public void sendMessage(Message messageToSend){
-        for(Handler handler : clientHandlerList){
+        for(String receiver : messageToSend.getReceivers()){
             try {
-                handler.objectOutputStream.writeObject(messageToSend);
-                handler.objectOutputStream.flush();
+                if(clientHandlerMap.containsKey(receiver)){
+                    clientHandlerMap.get(receiver).objectOutputStream.writeObject(messageToSend);
+                    clientHandlerMap.get(receiver).objectOutputStream.flush();
+                }
+    
             } catch (Exception e) {
                 removeHandler();
                 e.printStackTrace();
@@ -46,7 +51,7 @@ public class Handler implements Runnable{
     }
 
     public void removeHandler(){
-        clientHandlerList.remove(this);
+        clientHandlerMap.remove(this.clientUsername);
         String body = "SERVER: " + clientUsername + " has left the chat";
         Message messageToServer = new Message(true, clientUsername, body);
         Message messageToClient = new Message(false, clientUsername, body);
