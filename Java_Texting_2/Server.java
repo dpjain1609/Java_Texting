@@ -1,5 +1,3 @@
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -29,6 +27,7 @@ public class Server{
 
             } catch (Exception e) {
                 closeServer();
+                e.printStackTrace();
             }
         }
     }
@@ -39,7 +38,7 @@ public class Server{
                 this.serverSocket.close();
             }
         } catch (Exception e) {
-            
+            e.printStackTrace();
         }
     }
 

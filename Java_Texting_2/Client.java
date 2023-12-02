@@ -17,11 +17,12 @@ public class Client {
             this.socket = new Socket("localhost", 5000);
             this.objectOutputStream = new ObjectOutputStream(this.socket.getOutputStream());
             this.objectInputStream = new ObjectInputStream(this.socket.getInputStream());
-            Message usernameObject = new Message(true, this.username, "username");
+            Message usernameObject = new Message(false, this.username, ";");
             this.objectOutputStream.writeObject(usernameObject); 
 
         } catch (Exception e) {
             //removeClient();
+            e.printStackTrace();
             System.out.println("Exception in Client()");
         }
     }
@@ -43,18 +44,20 @@ public class Client {
             while(socket.isConnected()){
 
                 String messageToSend = scanner.nextLine();
-                Message messageToServer = new Message(true, this.username, messageToSend);
-                Message messageToClient = new Message(false, this.username, messageToSend);
-                objectOutputStream.writeObject(messageToClient);
                 
                 if(messageToSend.equalsIgnoreCase("quit")){
+                    Message messageToClient = new Message(true, this.username, messageToSend);
+                    objectOutputStream.writeObject(messageToClient);
                     break;
                 }
                 
+                Message messageToClient = new Message(false, this.username, messageToSend);
+                objectOutputStream.writeObject(messageToClient);
                 objectOutputStream.flush();
             }
         } catch (Exception e) {
             removeClient();
+            e.printStackTrace();
             System.out.println("Exception in sendMessage()");
         }
 
@@ -70,7 +73,9 @@ public class Client {
                 while(socket.isConnected()){
                     try {
                         messageFromGroupChat = (Message)objectInputStream.readObject();
-                        System.out.println(messageFromGroupChat.getSender() + ": " + messageFromGroupChat.getMessageBody());
+                        int shift = messageFromGroupChat.getShiftValue();
+                        String textMessage = decrypt(messageFromGroupChat.getMessageBody(), shift);
+                        System.out.println(messageFromGroupChat.getSender() + ": " + textMessage);
                     } catch (Exception e) {
                         removeClient();
                         break;
@@ -97,6 +102,28 @@ public class Client {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // Decrypt a message using Caesar cipher
+    public static String decrypt(String encryptedMessage, int shift) {
+        StringBuilder decryptedMessage = new StringBuilder();
+
+        for (char c : encryptedMessage.toCharArray()) {
+            // Decryption logic for each character
+            if (Character.isLetter(c)) {
+                char shiftedChar = (char) (c - shift);
+                if ((Character.isLowerCase(c) && shiftedChar < 'a') ||
+                    (Character.isUpperCase(c) && shiftedChar < 'A')) {
+                    shiftedChar += 26; // Wrap around the alphabet
+                }
+                decryptedMessage.append(shiftedChar);
+            } else {
+                decryptedMessage.append(c); // Keep non-letter characters unchanged
+            }
+
+        }
+
+        return decryptedMessage.toString();
     }
 
 }

@@ -36,13 +36,28 @@ public class Handler implements Runnable{
     }
 
     public void sendMessage(Message messageToSend){
+
+        try {
+            if(messageToSend.getReceivers().get(0).equalsIgnoreCase("all")){
+                for(String receiver : clientHandlerMap.keySet()){
+                    try {
+                        clientHandlerMap.get(receiver).objectOutputStream.writeObject(messageToSend);
+                        clientHandlerMap.get(receiver).objectOutputStream.flush();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            
+        }
+
         for(String receiver : messageToSend.getReceivers()){
             try {
                 if(clientHandlerMap.containsKey(receiver)){
                     clientHandlerMap.get(receiver).objectOutputStream.writeObject(messageToSend);
                     clientHandlerMap.get(receiver).objectOutputStream.flush();
                 }
-    
             } catch (Exception e) {
                 removeHandler();
                 e.printStackTrace();
@@ -53,11 +68,9 @@ public class Handler implements Runnable{
     public void removeHandler(){
         clientHandlerMap.remove(this.clientUsername);
         String body = "SERVER: " + clientUsername + " has left the chat";
-        Message messageToServer = new Message(true, clientUsername, body);
         Message messageToClient = new Message(false, clientUsername, body);
 
         sendMessage(messageToClient);
-        sendMessage(messageToServer);
 
         try {
             if(objectInputStream != null){
@@ -84,9 +97,10 @@ public class Handler implements Runnable{
             try {
                 messageFromClient = (Message)objectInputStream.readObject();
 
-                if(messageFromClient.getMessageBody().equalsIgnoreCase("quit")){
+                //user wants to quit
+                if(messageFromClient.isQuit()){
                     String message = this.clientUsername + " has left the chat";
-                    sendMessage(new Message(true, "SERVER", message));
+                    sendMessage(new Message(false, "SERVER", message));
                     System.out.println("SERVER: " + message);
                     removeHandler();
                     break;
@@ -95,6 +109,7 @@ public class Handler implements Runnable{
                 sendMessage(messageFromClient);
             } catch (Exception e) {
                 removeHandler();
+                e.printStackTrace();
                 break;
             }
         }
