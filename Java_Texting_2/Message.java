@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.SplittableRandom;
 import java.util.StringTokenizer;
 
+/*
+ * Message class to encapsulate key features of message objects used communication
+ * between clients and the server
+ */
 public class Message implements Serializable{
 
     private boolean quit;
@@ -12,12 +16,17 @@ public class Message implements Serializable{
     private String messageBody;
     int shiftValue;
 
+    //default constructor
     private Message(){
         this.sender = "";
         this.messageBody = "";
         this.receivers = new ArrayList<>();
     }
 
+    //initializing constructor
+    //Once the object is created, parse it and set the field
+    //generate a random number between 1 and 24 for encryption
+    //encrypt the message body of message using the random number
     public Message(boolean quit, String sender, String messageBody){
         this.quit = quit;
         this.sender = sender;
@@ -25,9 +34,15 @@ public class Message implements Serializable{
         this.receivers = new ArrayList<>();
         parser();
         this.shiftValue = (new SplittableRandom()).nextInt(24) + 1;
-        this.messageBody = encrypt(messageBody, shiftValue, shiftValue);
+        this.messageBody = encrypt(messageBody, shiftValue);
     }
 
+    /*
+     * Parser function for the message body
+     * Sepearate the plaintext messages by semi colons
+     * Add all, but the last string to the list of receivers
+     * The last string is the actual message which needs to go in the messageBody field
+     */
     private void parser(){
         StringTokenizer receiverTokenizer = new StringTokenizer(messageBody, ";");
         while(receiverTokenizer.hasMoreTokens()){
@@ -41,7 +56,7 @@ public class Message implements Serializable{
     }
 
     // Encrypt a message using Caesar cipher
-    public static String encrypt(String message, int shift, int shiftIteration) {
+    public static String encrypt(String message, int shift) {
         StringBuilder encryptedMessage = new StringBuilder();
 
         for (char c : message.toCharArray()) {
@@ -61,6 +76,7 @@ public class Message implements Serializable{
         return encryptedMessage.toString();
     }
 
+    //Getters and setters
     public String getSender() {
         return sender;
     }

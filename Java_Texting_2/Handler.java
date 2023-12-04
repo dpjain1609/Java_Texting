@@ -1,10 +1,13 @@
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
+/*
+ * Handler class for Client
+ * For each client connected to the server, create a handler
+ * Add the handler to clientHandlerMap with the client's username being the key
+ */
 public class Handler implements Runnable{
     
     public static Map<String, Handler> clientHandlerMap = new HashMap<>();
@@ -13,6 +16,12 @@ public class Handler implements Runnable{
     private ObjectInputStream objectInputStream;
     private String clientUsername;
 
+    /*
+     * Constructor
+     * Initializes the given socket, input stream and output stream
+     * Receive the username message from the client
+     * Send a message to the server
+     */
     public Handler(Socket socket){
 
         try {
@@ -35,8 +44,12 @@ public class Handler implements Runnable{
         }
     }
 
+    /*
+     * Function to send a message from the client to the receivers of that message
+     */
     public void sendMessage(Message messageToSend){
 
+        //if the client tries to send a message to all users, send a message to each key present in the handler map
         try {
             if(messageToSend.getReceivers().get(0).equalsIgnoreCase("all")){
                 for(String receiver : clientHandlerMap.keySet()){
@@ -52,6 +65,8 @@ public class Handler implements Runnable{
             
         }
 
+        //if the client tries to send a message to specific users, get their keys from the map and send the
+        //message to them
         for(String receiver : messageToSend.getReceivers()){
             try {
                 if(clientHandlerMap.containsKey(receiver)){
@@ -65,6 +80,11 @@ public class Handler implements Runnable{
         }
     }
 
+    /*
+     * Function to remove handler
+     * Send a notification to the server
+     * Close the input, output streams and the socket
+     */
     public void removeHandler(){
         clientHandlerMap.remove(this.clientUsername);
         String body = "SERVER: " + clientUsername + " has left the chat";
@@ -89,6 +109,9 @@ public class Handler implements Runnable{
         }
     }
 
+    //Receive a message via the server and check if it is a quit message
+    //If it is a quit message, send a notification to the server and remove the handler from the map
+    //Otherwise, send the message to intended receivers
     @Override
     public void run() {
         Message messageFromClient;
@@ -114,5 +137,4 @@ public class Handler implements Runnable{
             }
         }
     }
-
 }
